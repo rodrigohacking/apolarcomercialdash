@@ -192,6 +192,7 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         const getPhotoUrl = () => {
             if (config.id === 'amanda') return '/amanda.jpg';
             if (config.id === 'lucas') return '/lucas.jpg';
+            if (config.id === 'robson') return '/robson.jpg';
             return `https://api.dicebear.com/7.x/avataaars/svg?seed=${config.name}`;
         };
 
