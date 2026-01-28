@@ -2,6 +2,7 @@ export interface FinancialItem {
     id: string;
     name: string;
     value: number;
+    sold?: boolean;
 }
 
 export interface ActivityItem {
@@ -17,7 +18,9 @@ export interface Consultant {
     role: string;
     photoUrl?: string; // We'll use placeholders or imports
     financials: FinancialItem[];
-    totalFinancial: number;
+    totalFinancial: number; // Potential (Unsold)
+    totalSold: number;      // Realized (Sold)
+    proposalsSent: number;  // New field
     activities: ActivityItem[];
 }
 

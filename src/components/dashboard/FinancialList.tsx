@@ -5,12 +5,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface FinancialListProps {
     financials: FinancialItem[];
-    total: number;
+    totalPotential: number;
+    totalSold: number;
 }
 
 const ITEMS_PER_PAGE = 5;
 
-export const FinancialList = ({ financials, total }: FinancialListProps) => {
+export const FinancialList = ({ financials, totalPotential, totalSold }: FinancialListProps) => {
     const [currentPage, setCurrentPage] = useState(0);
 
     const totalPages = Math.ceil(financials.length / ITEMS_PER_PAGE);
@@ -30,10 +31,20 @@ export const FinancialList = ({ financials, total }: FinancialListProps) => {
 
     return (
         <div className="mb-6">
-            <div className="flex justify-between items-end mb-3 px-1">
-                <h3 className="text-sm font-semibold text-white/70 uppercase tracking-wider">Honorários</h3>
-                <span className="text-lg font-bold text-green-400 drop-shadow-sm">
-                    {formatCurrency(total)}
+            <div className="flex justify-between items-end mb-2 px-1">
+                <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Potencial</h3>
+                <span className="text-sm font-bold text-white/70 drop-shadow-sm">
+                    {formatCurrency(totalPotential)}
+                </span>
+            </div>
+
+            <div className="flex justify-between items-end mb-4 px-1 pb-2 border-b border-white/10">
+                <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Faturamento
+                </h3>
+                <span className="text-xl font-bold text-green-400 drop-shadow-sm">
+                    {formatCurrency(totalSold)}
                 </span>
             </div>
 
@@ -51,12 +62,25 @@ export const FinancialList = ({ financials, total }: FinancialListProps) => {
                             {currentItems.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex justify-between items-center p-2 rounded-lg hover:bg-white/5 transition-colors text-xs sm:text-sm"
+                                    className={`flex justify-between items-center p-2 rounded-lg transition-all ${item.sold
+                                        ? "bg-green-500/20 border border-green-500/30"
+                                        : "hover:bg-white/5 border border-transparent"
+                                        }`}
                                 >
-                                    <span className="text-gray-300 truncate font-medium max-w-[120px]" title={item.name}>
-                                        {item.name}
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 transition-colors ${item.sold ? "bg-green-500 border-green-500" : "border-white/30"
+                                            }`}>
+                                            {item.sold && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                        </div>
+                                        <span className={`truncate font-medium max-w-[120px] transition-colors ${item.sold ? "text-green-100" : "text-gray-300"
+                                            }`} title={item.name}>
+                                            {item.name}
+                                        </span>
+                                    </div>
+                                    <span className={`font-mono text-xs sm:text-sm transition-colors ${item.sold ? "text-green-200" : "text-white"
+                                        }`}>
+                                        {formatCurrency(item.value)}
                                     </span>
-                                    <span className="text-white font-mono">{formatCurrency(item.value)}</span>
                                 </div>
                             ))}
                         </motion.div>
@@ -84,8 +108,8 @@ export const FinancialList = ({ financials, total }: FinancialListProps) => {
                                     key={idx}
                                     onClick={() => setCurrentPage(idx)}
                                     className={`w-6 h-6 rounded-full text-xs font-medium flex items-center justify-center transition-all ${currentPage === idx
-                                            ? "bg-blue-600/80 text-white shadow-sm scale-110"
-                                            : "bg-white/5 text-gray-400 hover:bg-white/10"
+                                        ? "bg-blue-600/80 text-white shadow-sm scale-110"
+                                        : "bg-white/5 text-gray-400 hover:bg-white/10"
                                         }`}
                                 >
                                     {idx + 1}

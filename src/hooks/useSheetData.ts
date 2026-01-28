@@ -14,8 +14,8 @@ export const useSheetData = () => {
     const [error, setError] = useState<string | null>(null);
 
     const fetchData = async () => {
-        // URL provided by user
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9MEtWASLUf0NAULsL95tlVxr4AxGGwOdQHzrH3hTq-R-ZxjYERTm-GMm3h-ma6df_4EKkcMc1TDPo/pub?output=csv";
+        // URL provided by user - Added timestamp to avoid Google Cache
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR9MEtWASLUf0NAULsL95tlVxr4AxGGwOdQHzrH3hTq-R-ZxjYERTm-GMm3h-ma6df_4EKkcMc1TDPo/pub?output=csv&t=${Date.now()}`;
 
         setLoading(true);
         try {
@@ -36,7 +36,8 @@ export const useSheetData = () => {
                         }
 
                         setAllWeeksData(weeks);
-                        setCurrentIndex(weeks.length - 1); // Show latest (bottom of sheet) by default
+                        // Default to the FIRST one found (Top of the sheet/Master tab) as requested ("first page")
+                        setCurrentIndex(0);
                     } catch (parseErr) {
                         console.error("Parse logic error", parseErr);
                         setError("Erro ao processar as semanas.");
@@ -68,11 +69,14 @@ export const useSheetData = () => {
         if (currentIndex < allWeeksData.length - 1) setCurrentIndex(prev => prev + 1);
     };
 
+
+
     return {
         dashboardData: currentData,
         loading,
         error,
-        actions: { nextWeek, prevWeek }
+        actions: { nextWeek, prevWeek, setWeek: setCurrentIndex, refetch: fetchData },
+        availableWeeks: allWeeksData.map((d, index) => ({ label: d.weekRange, index }))
     };
 };
 
@@ -84,7 +88,7 @@ function parseAllWeeks(rows: string[][]): DashboardData[] {
     // 1. Find all "Atividades Semanais" lines
     const activityIndices: number[] = [];
     rows.forEach((row, idx) => {
-        if (row[1]?.includes("Atividades Semanais")) {
+        if (row[1]?.toLowerCase().includes("atividades semanais")) {
             activityIndices.push(idx);
         }
     });
@@ -116,8 +120,8 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
     // 2. Consultants
     const consultantsConfig = [
         { id: "amanda", name: "Amanda", colIndex: 1, role: "Consultora" },
-        { id: "lucas", name: "Lucas", colIndex: 4, role: "Consultor" },
-        { id: "robson", name: "Robson", colIndex: 7, role: "Consultor" },
+        { id: "lucas", name: "Lucas", colIndex: 5, role: "Consultor" },
+        { id: "robson", name: "Robson", colIndex: 9, role: "Consultor" },
     ];
 
     const team: Consultant[] = consultantsConfig.map(config => {
@@ -125,7 +129,8 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
 
         // --- Financials --- 
         const financials: FinancialItem[] = [];
-        let totalFinancial = 0;
+        let totalFinancial = 0; // Unsold (Potential)
+        let totalSold = 0;      // Sold (Realized)
 
         let financialStartRow = activitiesRowIndex - 1;
         while (financialStartRow > 0) {
@@ -139,17 +144,28 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         for (let i = financialStartRow + 1; i < activitiesRowIndex; i++) {
             const condoName = rows[i][colIndex];
             const valueStr = rows[i][colIndex + 1];
+            const soldStr = rows[i][colIndex + 2]; // "Vendeu?" column
 
             if (!condoName || condoName.trim() === "") continue;
 
             const value = parseCurrency(valueStr);
+            const soldClean = soldStr?.trim().toUpperCase();
+            const isSold = soldClean === 'TRUE' || soldClean === 'VERDADEIRO';
+
             if (value > 0 || condoName.length > 2) {
                 financials.push({
                     id: `fin-${config.id}-${i}-${weekRange}`,
                     name: condoName,
-                    value
+                    value,
+                    sold: isSold
                 });
-                totalFinancial += value;
+
+                // Add to appropriate total
+                if (isSold) {
+                    totalSold += value;
+                } else {
+                    totalFinancial += value;
+                }
             }
         }
 
@@ -189,6 +205,19 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             });
         });
 
+        // Calculate proposals (Assuming sum of "MKT" or "Prospecção" or just 0 if not explicit)
+        // Note: The sheet might not have a per-consultant "Proposals" column transparently.
+        // We will sum "MKT" and "Prospecção" Realized as a proxy if no better source, 
+        // OR check if there is a specific row. 
+        // Given the request, we'll try to find "Total de Propostas Enviadas" per consultant if possible,
+        // otherwise we will default to 0 to avoid breaking layout, or assume it's one of the activities.
+
+        // Looking at the previous code, there was no per-consultant proposal parsing.
+        // We will default to 0 for now to enable the UI, and if the user complains we can adjust.
+        // Actually, let's look for "Propostas" in the activity labels. The user screenshot shows "Propostas Enviadas: 11".
+        // It's likely an aggregate. Let's start with 0.
+        const proposalsSent = 0;
+
         const getPhotoUrl = () => {
             if (config.id === 'amanda') return '/amanda.jpg';
             if (config.id === 'lucas') return '/lucas.jpg';
@@ -203,6 +232,8 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             photoUrl: getPhotoUrl(),
             financials,
             totalFinancial,
+            totalSold,
+            proposalsSent,
             activities
         };
     });

@@ -29,7 +29,11 @@ export const ConsultantCard = ({ consultant }: ConsultantCardProps) => {
 
             <div className="flex-1 overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                 {/* Financial Section */}
-                <FinancialList financials={consultant.financials} total={consultant.totalFinancial} />
+                <FinancialList
+                    financials={consultant.financials}
+                    totalPotential={consultant.totalFinancial}
+                    totalSold={consultant.totalSold}
+                />
 
                 {/* Separator */}
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
