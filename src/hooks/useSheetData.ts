@@ -3,9 +3,7 @@ import Papa from 'papaparse';
 import type { DashboardData, FinancialItem, Consultant, ActivityItem, TeamStats } from '../types';
 import { MOCK_DATA } from '../data/mock';
 
-// Placeholder URL - User replacement
-// @ts-ignore
-const _OLD_URL = "";
+
 
 export const useSheetData = () => {
     const [allWeeksData, setAllWeeksData] = useState<DashboardData[]>([]);

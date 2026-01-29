@@ -1,7 +1,8 @@
 import { useState } from "react";
-import type { TeamStats, Consultant } from "../../types";
+import type { TeamStats, Consultant, FinancialItem } from "../../types";
 import { Card } from "../ui/Card";
-import { Briefcase, CalendarCheck, CalendarDays, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Briefcase, CalendarCheck, CalendarDays, Send } from "lucide-react";
+import { StatItem } from "./StatItem";
 import { cn } from "../../lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,60 +22,12 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
         }
     };
 
-    const StatItem = ({
-        icon: Icon,
-        label,
-        value,
-        isCurrency = false,
-        color = "text-blue-400",
-        bgColor = "bg-blue-400/10",
-        sectionId,
-        className
-    }: {
-        icon: any,
-        label: string,
-        value: number,
-        isCurrency?: boolean,
-        color?: string,
-        bgColor?: string,
-        sectionId?: string,
-        className?: string
-    }) => (
-        <div
-            onClick={() => sectionId && toggleSection(sectionId)}
-            className={cn(
-                "flex items-center gap-3 transition-all",
-                sectionId ? "cursor-pointer hover:bg-white/5 p-2 rounded-lg -m-2" : "",
-                className,
-                expandedSection === sectionId ? "bg-white/5 ring-1 ring-white/10" : ""
-            )}
-        >
-            <div className={cn("p-2.5 rounded-xl transition-transform", bgColor, expandedSection === sectionId ? "scale-110" : "")}>
-                <Icon className={cn("w-5 h-5", color)} />
-            </div>
-            <div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide font-medium flex items-center gap-1">
-                    {label}
-                    {sectionId && (
-                        expandedSection === sectionId ? <ChevronUp size={12} /> : <ChevronDown size={12} />
-                    )}
-                </div>
-                <div className="text-lg font-bold text-white">
-                    {isCurrency
-                        ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-                        : value
-                    }
-                </div>
-            </div>
-        </div>
-    );
-
     const getDetailData = () => {
         if (!expandedSection) return [];
 
         return team.map(consultant => {
             let value = 0;
-            let items: any[] = []; // Optional detailed list items
+            let items: FinancialItem[] = []; // Optional detailed list items
 
             switch (expandedSection) {
                 case 'contracts':
@@ -125,6 +78,8 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
                     color="text-emerald-400"
                     bgColor="bg-emerald-400/10"
                     sectionId="contracts"
+                    expandedSection={expandedSection}
+                    onToggle={toggleSection}
                 />
                 <StatItem
                     icon={CalendarDays}
@@ -133,6 +88,8 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
                     color="text-amber-400"
                     bgColor="bg-amber-400/10"
                     sectionId="scheduled"
+                    expandedSection={expandedSection}
+                    onToggle={toggleSection}
                 />
                 <StatItem
                     icon={CalendarCheck}
@@ -141,6 +98,8 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
                     color="text-blue-400"
                     bgColor="bg-blue-400/10"
                     sectionId="realized"
+                    expandedSection={expandedSection}
+                    onToggle={toggleSection}
                 />
                 <StatItem
                     icon={Send}
@@ -149,6 +108,8 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
                     color="text-purple-400"
                     bgColor="bg-purple-400/10"
                     sectionId="proposals"
+                    expandedSection={expandedSection}
+                    onToggle={toggleSection}
                 />
             </div>
 
