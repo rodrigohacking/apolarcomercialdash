@@ -15,7 +15,7 @@ export const ActivityList = ({ activities }: ActivityListProps) => {
                         <div className="flex justify-between items-center mb-1 text-xs sm:text-sm text-gray-200">
                             <span className="font-medium truncate pr-2">{act.label}</span>
                             <span className="font-mono text-white/50 group-hover:text-white transition-colors">
-                                {act.label === "Contratos Fechados" ? (
+                                {act.label === "Contratos Fechados" || act.label === "Parceria Fechada" ? (
                                     <span className="text-emerald-400 font-bold">{act.realized}</span>
                                 ) : (
                                     <>
