@@ -142,10 +142,14 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             if (activitiesRowIndex - financialStartRow > 30) break;
         }
 
+        // ... existing financial parsing ...
+        let itemsSold = 0; // Track count of sold items
+
         for (let i = financialStartRow + 1; i < activitiesRowIndex; i++) {
+            // ... existing loop setup ...
             const condoName = rows[i][colIndex];
             const valueStr = rows[i][colIndex + 1];
-            const soldStr = rows[i][colIndex + 2]; // "Vendeu?" column
+            const soldStr = rows[i][colIndex + 2];
 
             if (!condoName || condoName.trim() === "") continue;
             if (condoName.trim().toUpperCase().startsWith("TOTAL")) continue;
@@ -162,9 +166,9 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
                     sold: isSold
                 });
 
-                // Add to appropriate total
                 if (isSold) {
                     totalSold += value;
+                    itemsSold++;
                 } else {
                     totalFinancial += value;
                 }
@@ -186,7 +190,13 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
 
             const maxSearch = 20;
 
-            if (label === "Contratos Fechados" || label === "Parceria Fechada") {
+            if (label === "Contratos Fechados") {
+                // Override: Use the counted sold items from financials
+                realized = itemsSold;
+                // User wants "100% completo a barrinha", so set scheduled equal to realized (if > 0)
+                // If 0, both are 0 which is fine.
+                scheduled = itemsSold;
+            } else if (label === "Parceria Fechada") {
                 const row = rows.slice(activitiesRowIndex, activitiesRowIndex + maxSearch)
                     .find((r) => r[colIndex]?.includes(label));
                 if (row) realized = parseInt(row[colIndex + 1]) || 0;
