@@ -43,13 +43,27 @@ export const DashboardPage = () => {
                     />
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
+                {/* Animated Background Overlay */}
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] opacity-30 animate-spin-slow bg-[conic-gradient(from_0deg,transparent_0deg,rgba(4,11,40,0.5)_180deg,transparent_360deg)]" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
+                </div>
+
+                <div className={`relative z-10 grid grid-cols-1 gap-6 auto-rows-fr ${team.length === 1 ? 'md:grid-cols-1 max-w-2xl mx-auto' :
+                        team.length === 2 ? 'md:grid-cols-2' :
+                            'md:grid-cols-3'
+                    }`}>
                     {team.map((consultant, index) => (
                         <motion.div
                             key={consultant.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
+                            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{
+                                type: "spring",
+                                stiffness: 260,
+                                damping: 20,
+                                delay: 0.1 + index * 0.2
+                            }}
                             className="h-full"
                         >
                             <ConsultantCard

@@ -41,3 +41,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 30s linear infinite;
+  }
+}
