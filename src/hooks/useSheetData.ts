@@ -148,6 +148,7 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             const soldStr = rows[i][colIndex + 2]; // "Vendeu?" column
 
             if (!condoName || condoName.trim() === "") continue;
+            if (condoName.trim().toUpperCase().startsWith("TOTAL")) continue;
 
             const value = parseCurrency(valueStr);
             const soldClean = soldStr?.trim().toUpperCase();
