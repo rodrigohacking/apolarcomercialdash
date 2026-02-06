@@ -3,10 +3,10 @@ import type { DashboardData } from "../types";
 export const MOCK_DATA: DashboardData = {
     weekRange: "12/01 a 18/01",
     stats: {
-        totalContractsValue: 28398.00,
-        meetingsScheduled: 35,
-        meetingsRealized: 24,
-        proposalsSent: 12,
+        totalContractsValue: 21012.00, // 14282 (Amanda) + 6730 (Lucas)
+        meetingsScheduled: 13,         // Amanda (5) + Lucas (8)
+        meetingsRealized: 10,          // Amanda (7) + Lucas (3)
+        proposalsSent: 7,              // Amanda (4) + Lucas (3)
     },
     team: [
         {

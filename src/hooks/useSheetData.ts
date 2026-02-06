@@ -234,19 +234,12 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         };
     });
 
-    // 3. Team Stats
-    const searchScope = rows.slice(activitiesRowIndex, activitiesRowIndex + 40);
-
-    const getValueFromLabel = (searchLabel: string) => {
-        const row = searchScope.find(r => r[1]?.includes(searchLabel));
-        return row ? (typeof row[2] === 'string' && row[2].includes("R$") ? parseCurrency(row[2]) : parseInt(row[2]) || 0) : 0;
-    };
-
+    // 3. Team Stats - Calculated locally to exclude removed consultants
     const stats: TeamStats = {
-        totalContractsValue: getValueFromLabel("TOTAL DE VALOR CONTRATOS"),
-        meetingsScheduled: getValueFromLabel("TOTAL DE REUNIÕES AGENDADAS"),
-        meetingsRealized: getValueFromLabel("TOTAL DE REUNIÕES REALIZADAS"),
-        proposalsSent: getValueFromLabel("TOTAL DE PROPOSTAS ENVIADAS")
+        totalContractsValue: team.reduce((acc, curr) => acc + curr.totalSold, 0),
+        meetingsScheduled: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.scheduled, 0), 0),
+        meetingsRealized: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.realized, 0), 0),
+        proposalsSent: team.reduce((acc, curr) => acc + curr.proposalsSent, 0)
     };
 
     return { weekRange, team, stats };
