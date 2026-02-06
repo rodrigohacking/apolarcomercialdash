@@ -86,7 +86,8 @@ function parseAllWeeks(rows: string[][]): DashboardData[] {
     // 1. Find all "Atividades Semanais" lines
     const activityIndices: number[] = [];
     rows.forEach((row, idx) => {
-        if (row[1]?.toLowerCase().includes("atividades semanais")) {
+        // Changed from row[1] to row[0] based on CSV structure
+        if (row[0]?.toLowerCase().includes("atividades semanais")) {
             activityIndices.push(idx);
         }
     });
@@ -104,7 +105,8 @@ function parseAllWeeks(rows: string[][]): DashboardData[] {
 function parseSingleBlock(rows: string[][], activitiesRowIndex: number): DashboardData {
     // 1. Extract Date Range
     let weekRange = "Semana Indefinida";
-    const headerText = rows[activitiesRowIndex][1];
+    // Changed from row[1] to row[0]
+    const headerText = rows[activitiesRowIndex][0];
     const parts = headerText.split("-");
     if (parts.length > 1) weekRange = parts[1].trim();
 
@@ -117,8 +119,10 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
 
     // 2. Consultants
     const consultantsConfig = [
-        { id: "amanda", name: "Amanda", colIndex: 1, role: "Consultora" },
-        { id: "lucas", name: "Lucas", colIndex: 5, role: "Consultor" },
+        // Changed colIndex from 1 (B) to 0 (A)
+        { id: "amanda", name: "Amanda", colIndex: 0, role: "Consultora" },
+        // Changed colIndex from 5 (F) to 4 (E)
+        { id: "lucas", name: "Lucas", colIndex: 4, role: "Consultor" },
     ];
 
     const team: Consultant[] = consultantsConfig.map(config => {
