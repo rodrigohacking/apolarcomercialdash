@@ -33,9 +33,9 @@ export const Header = ({
             {/* Date Selector */}
             <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1.5 shadow-md relative group">
                 <button
-                    onClick={onPrev}
+                    onClick={onNext} // Left arrow goes to OLDER (Next in list)
                     className="p-1.5 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    disabled={availableWeeks.length > 0 && currentWeekIndex === 0}
+                    disabled={availableWeeks.length > 0 && currentWeekIndex === availableWeeks.length - 1}
                 >
                     <ChevronLeft size={18} />
                 </button>
@@ -63,9 +63,9 @@ export const Header = ({
                 </div>
 
                 <button
-                    onClick={onNext}
+                    onClick={onPrev} // Right arrow goes to NEWER (Prev in list)
                     className="p-1.5 rounded-full hover:bg-white/10 text-gray-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    disabled={availableWeeks.length > 0 && currentWeekIndex === availableWeeks.length - 1}
+                    disabled={availableWeeks.length > 0 && currentWeekIndex === 0}
                 >
                     <ChevronRight size={18} />
                 </button>
