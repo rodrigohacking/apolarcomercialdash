@@ -63,32 +63,6 @@ export const MOCK_DATA: DashboardData = {
                 { id: "act7", label: "Busca Externa", scheduled: 0, realized: 0 },
             ]
         },
-        {
-            id: "robson",
-            name: "Robson",
-            role: "Consultor",
-            photoUrl: "/robson.jpg",
-            totalFinancial: 7386.00,
-            totalSold: 0,
-            proposalsSent: 5,
-            financials: [
-                { id: "1", name: "Aliança", value: 1200.00 },
-                { id: "2", name: "Sheratan", value: 1000.00 },
-                { id: "3", name: "Aspen", value: 400.00 },
-                { id: "4", name: "Fit Calobá", value: 1250.00 },
-                { id: "5", name: "São Paulo", value: 1518.00 },
-                { id: "6", name: "Solar Teresópolis", value: 1518.00 },
-                { id: "7", name: "Ilha Bela", value: 500.00 },
-            ],
-            activities: [
-                { id: "act1", label: "Contratos Fechados", scheduled: 0, realized: 0 },
-                { id: "act2", label: "Discador", scheduled: 5, realized: 4 },
-                { id: "act3", label: "BOT", scheduled: 2, realized: 2 },
-                { id: "act4", label: "MKT", scheduled: 2, realized: 1 },
-                { id: "act5", label: "Prospecção Ativa", scheduled: 4, realized: 3 },
-                { id: "act6", label: "Síndicos Profissionais", scheduled: 5, realized: 2 },
-                { id: "act7", label: "Busca Externa", scheduled: 2, realized: 1 },
-            ]
-        }
+
     ]
 };

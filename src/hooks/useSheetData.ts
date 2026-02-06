@@ -119,7 +119,6 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
     const consultantsConfig = [
         { id: "amanda", name: "Amanda", colIndex: 1, role: "Consultora" },
         { id: "lucas", name: "Lucas", colIndex: 5, role: "Consultor" },
-        { id: "robson", name: "Robson", colIndex: 9, role: "Consultor" },
     ];
 
     const team: Consultant[] = consultantsConfig.map(config => {
@@ -219,7 +218,6 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         const getPhotoUrl = () => {
             if (config.id === 'amanda') return '/amanda.jpg';
             if (config.id === 'lucas') return '/lucas.jpg';
-            if (config.id === 'robson') return '/robson.jpg';
             return `https://api.dicebear.com/7.x/avataaars/svg?seed=${config.name}`;
         };
 
