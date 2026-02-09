@@ -249,12 +249,22 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         };
     });
 
-    // 3. Team Stats - Calculated locally to exclude removed consultants
+    // 3. Team Stats
+    // Find "TOTAL DE PROPOSTAS ENVIADAS EQUIPE"
+    let totalProposals = 0;
+    const searchLimit = 50; // Look up to 50 rows after activities start
+    const proposalsRow = rows.slice(activitiesRowIndex, activitiesRowIndex + searchLimit)
+        .find(r => r[0]?.toUpperCase().includes("TOTAL DE PROPOSTAS ENVIADAS"));
+
+    if (proposalsRow) {
+        totalProposals = parseInt(proposalsRow[1]) || 0;
+    }
+
     const stats: TeamStats = {
         totalContractsValue: team.reduce((acc, curr) => acc + curr.totalSold, 0),
         meetingsScheduled: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.scheduled, 0), 0),
         meetingsRealized: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.realized, 0), 0),
-        proposalsSent: team.reduce((acc, curr) => acc + curr.proposalsSent, 0)
+        proposalsSent: totalProposals
     };
 
     return { weekRange, team, stats };
