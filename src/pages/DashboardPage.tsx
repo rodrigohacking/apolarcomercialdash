@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "../components/dashboard/Header";
 import { ConsultantCard } from "../components/dashboard/ConsultantCard";
 import { TeamFooter } from "../components/dashboard/TeamFooter";
@@ -7,6 +8,7 @@ import { useSheetData } from "../hooks/useSheetData";
 export const DashboardPage = () => {
     const { dashboardData, loading, actions, availableWeeks } = useSheetData();
     const { weekRange, team, stats } = dashboardData;
+    const [activeTab, setActiveTab] = useState<string>("amanda");
 
     if (loading) {
         return (
@@ -49,28 +51,54 @@ export const DashboardPage = () => {
                     <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay" />
                 </div>
 
-                <div className={`relative z-10 grid grid-cols-1 gap-6 auto-rows-fr ${team.length === 1 ? 'md:grid-cols-1 max-w-2xl mx-auto' :
-                        team.length === 2 ? 'md:grid-cols-2' :
-                            'md:grid-cols-3'
-                    }`}>
-                    {team.map((consultant, index) => (
-                        <motion.div
-                            key={consultant.id}
-                            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 260,
-                                damping: 20,
-                                delay: 0.1 + index * 0.2
-                            }}
-                            className="h-full"
-                        >
-                            <ConsultantCard
-                                consultant={consultant}
-                            />
-                        </motion.div>
-                    ))}
+                <div className="relative z-10 max-w-3xl mx-auto mb-8">
+                    <div className="flex p-1 space-x-1 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+                        {team.map((consultant) => (
+                            <button
+                                key={consultant.id}
+                                onClick={() => setActiveTab(consultant.id)}
+                                className={`
+                                    flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-out flex items-center justify-center gap-2
+                                    ${activeTab === consultant.id 
+                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-900/50 scale-[1.02]' 
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}
+                                `}
+                            >
+                                {consultant.id === 'amanda' ? (
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-white/20">
+                                        <img src={consultant.photoUrl} alt={consultant.name} className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-white/20 bg-slate-800 flex items-center justify-center">
+                                        <span className="text-xs">🏢</span>
+                                    </div>
+                                )}
+                                {consultant.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="relative z-10 max-w-2xl mx-auto">
+                    <AnimatePresence mode="wait">
+                        {team.map((consultant) => (
+                            consultant.id === activeTab && (
+                                <motion.div
+                                    key={consultant.id}
+                                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 25,
+                                    }}
+                                >
+                                    <ConsultantCard consultant={consultant} />
+                                </motion.div>
+                            )
+                        ))}
+                    </AnimatePresence>
                 </div>
 
                 <motion.div

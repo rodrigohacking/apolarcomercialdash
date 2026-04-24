@@ -119,10 +119,8 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
 
     // 2. Consultants
     const consultantsConfig = [
-        // Changed colIndex from 1 (B) to 0 (A)
         { id: "amanda", name: "Amanda", colIndex: 0, role: "Consultora" },
-        // Changed colIndex from 5 (F) to 4 (E)
-        { id: "lucas", name: "Lucas", colIndex: 4, role: "Consultor" },
+        { id: "outros", name: "Outros Condomínios", colIndex: 4, role: "Outros" },
     ];
 
     const team: Consultant[] = consultantsConfig.map(config => {
@@ -142,11 +140,9 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             if (activitiesRowIndex - financialStartRow > 30) break;
         }
 
-        // ... existing financial parsing ...
-        let itemsSold = 0; // Track count of sold items
+        let itemsSold = 0;
 
         for (let i = financialStartRow + 1; i < activitiesRowIndex; i++) {
-            // ... existing loop setup ...
             const condoName = rows[i][colIndex];
             const valueStr = rows[i][colIndex + 1];
             const soldStr = rows[i][colIndex + 2];
@@ -191,10 +187,7 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             const maxSearch = 20;
 
             if (label === "Contratos Fechados") {
-                // Override: Use the counted sold items from financials
                 realized = itemsSold;
-                // User wants "100% completo a barrinha", so set scheduled equal to realized (if > 0)
-                // If 0, both are 0 which is fine.
                 scheduled = itemsSold;
             } else if (label === "Parceria Fechada") {
                 const row = rows.slice(activitiesRowIndex, activitiesRowIndex + maxSearch)
@@ -217,23 +210,12 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
             });
         });
 
-        // Calculate proposals (Assuming sum of "MKT" or "Prospecção" or just 0 if not explicit)
-        // Note: The sheet might not have a per-consultant "Proposals" column transparently.
-        // We will sum "MKT" and "Prospecção" Realized as a proxy if no better source, 
-        // OR check if there is a specific row. 
-        // Given the request, we'll try to find "Total de Propostas Enviadas" per consultant if possible,
-        // otherwise we will default to 0 to avoid breaking layout, or assume it's one of the activities.
-
-        // Looking at the previous code, there was no per-consultant proposal parsing.
-        // We will default to 0 for now to enable the UI, and if the user complains we can adjust.
-        // Actually, let's look for "Propostas" in the activity labels. The user screenshot shows "Propostas Enviadas: 11".
-        // It's likely an aggregate. Let's start with 0.
         const proposalsSent = 0;
 
         const getPhotoUrl = () => {
             if (config.id === 'amanda') return '/amanda.jpg';
-            if (config.id === 'lucas') return '/lucas.jpg';
-            return `https://api.dicebear.com/7.x/avataaars/svg?seed=${config.name}`;
+            // Placeholder/icon for "Outros Condomínios"
+            return `https://api.dicebear.com/7.x/shapes/svg?seed=outros&backgroundColor=1e1e2f`;
         };
 
         return {
@@ -249,21 +231,28 @@ function parseSingleBlock(rows: string[][], activitiesRowIndex: number): Dashboa
         };
     });
 
-    // 3. Team Stats
-    // Find "TOTAL DE PROPOSTAS ENVIADAS EQUIPE"
+    // 3. Team Stats - FETCHING DIRECTLY FROM TOTAL LINES FOR FIDELITY
     let totalProposals = 0;
-    const searchLimit = 50; // Look up to 50 rows after activities start
-    const proposalsRow = rows.slice(activitiesRowIndex, activitiesRowIndex + searchLimit)
-        .find(r => r[0]?.toUpperCase().includes("TOTAL DE PROPOSTAS ENVIADAS"));
+    let totalScheduledMeetings = 0;
+    let totalRealizedMeetings = 0;
+    let totalContractsValue = team.reduce((acc, curr) => acc + curr.totalSold, 0);
 
-    if (proposalsRow) {
-        totalProposals = parseInt(proposalsRow[1]) || 0;
-    }
+    const searchLimit = 50;
+    const relevantRows = rows.slice(activitiesRowIndex, activitiesRowIndex + searchLimit);
+
+    const proposalsRow = relevantRows.find(r => r[0]?.toUpperCase().includes("TOTAL DE PROPOSTAS ENVIADAS"));
+    if (proposalsRow) totalProposals = parseInt(proposalsRow[1]) || 0;
+
+    const scheduledRow = relevantRows.find(r => r[0]?.toUpperCase().includes("TOTAL DE REUNIÕES AGENDADAS"));
+    if (scheduledRow) totalScheduledMeetings = parseInt(scheduledRow[1]) || 0;
+
+    const realizedRow = relevantRows.find(r => r[0]?.toUpperCase().includes("TOTAL DE REUNIÕES REALIZADAS"));
+    if (realizedRow) totalRealizedMeetings = parseInt(realizedRow[1]) || 0;
 
     const stats: TeamStats = {
-        totalContractsValue: team.reduce((acc, curr) => acc + curr.totalSold, 0),
-        meetingsScheduled: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.scheduled, 0), 0),
-        meetingsRealized: team.reduce((acc, curr) => acc + curr.activities.reduce((s, a) => s + a.realized, 0), 0),
+        totalContractsValue,
+        meetingsScheduled: totalScheduledMeetings,
+        meetingsRealized: totalRealizedMeetings,
         proposalsSent: totalProposals
     };
 

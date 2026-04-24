@@ -35,12 +35,16 @@ export const TeamFooter = ({ stats, team }: TeamFooterProps) => {
                     items = consultant.financials.filter(f => f.sold);
                     break;
                 case 'scheduled':
-                    // Sum of all SCHEDULED activities
-                    value = consultant.activities.reduce((sum, act) => sum + act.scheduled, 0);
+                    // Sum of all SCHEDULED activities (excluding visual indicators like closed contracts)
+                    value = consultant.activities
+                        .filter(act => act.label !== "Contratos Fechados")
+                        .reduce((sum, act) => sum + act.scheduled, 0);
                     break;
                 case 'realized':
-                    // Sum of all REALIZED activities
-                    value = consultant.activities.reduce((sum, act) => sum + act.realized, 0);
+                    // Sum of all REALIZED activities (excluding visual indicators like closed contracts)
+                    value = consultant.activities
+                        .filter(act => act.label !== "Contratos Fechados")
+                        .reduce((sum, act) => sum + act.realized, 0);
                     break;
                 case 'proposals':
                     value = consultant.proposalsSent;
