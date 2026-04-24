@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import type { DashboardData, FinancialItem, Consultant, ActivityItem, TeamStats } from '../types';
 import { MOCK_DATA } from '../data/mock';
 
@@ -12,39 +12,51 @@ export const useSheetData = () => {
     const [error, setError] = useState<string | null>(null);
 
     const fetchData = async () => {
-        // URL provided by user - Added timestamp to avoid Google Cache
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR9MEtWASLUf0NAULsL95tlVxr4AxGGwOdQHzrH3hTq-R-ZxjYERTm-GMm3h-ma6df_4EKkcMc1TDPo/pub?output=csv&t=${Date.now()}`;
+        // URL provided by user - Changed output to xlsx to read all tabs
+        const XLSX_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR9MEtWASLUf0NAULsL95tlVxr4AxGGwOdQHzrH3hTq-R-ZxjYERTm-GMm3h-ma6df_4EKkcMc1TDPo/pub?output=xlsx&t=${Date.now()}`;
 
         setLoading(true);
         try {
-            const response = await fetch(CSV_URL);
-            const csvText = await response.text();
+            const response = await fetch(XLSX_URL);
+            const arrayBuffer = await response.arrayBuffer();
 
-            Papa.parse(csvText, {
-                header: false,
-                skipEmptyLines: false,
-                complete: (results) => {
-                    const rows = results.data as string[][];
-                    try {
-                        const weeks = parseAllWeeks(rows);
-
-                        if (weeks.length === 0) {
-                            setError("Nenhuma semana encontrada. Verifique o layout.");
-                            return;
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            
+            const allRows: string[][] = [];
+            
+            for (const sheetName of workbook.SheetNames) {
+                const sheet = workbook.Sheets[sheetName];
+                // defval ensures empty cells are returned as empty strings
+                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }) as string[][];
+                
+                // Try to inject the sheet name into the "Atividades semanais" row if it exists, 
+                // to guarantee the weekRange label is the tab name
+                rows.forEach((row) => {
+                    if (row[0] && typeof row[0] === 'string' && row[0].toLowerCase().includes("atividades semanais")) {
+                        if (!row[0].includes("-")) {
+                            row[0] = `${row[0]} - ${sheetName}`;
                         }
-
-                        setAllWeeksData(weeks);
-                        // Default to the FIRST one found (Top of the sheet/Master tab) as requested ("first page")
-                        setCurrentIndex(0);
-                    } catch (parseErr) {
-                        console.error("Parse logic error", parseErr);
-                        setError("Erro ao processar as semanas.");
                     }
-                },
-                error: (err: Error) => {
-                    setError(err.message);
+                });
+
+                allRows.push(...rows);
+                allRows.push([]); // visual separator between sheets
+            }
+
+            try {
+                const weeks = parseAllWeeks(allRows);
+
+                if (weeks.length === 0) {
+                    setError("Nenhuma semana encontrada. Verifique o layout.");
+                    return;
                 }
-            });
+
+                setAllWeeksData(weeks);
+                setCurrentIndex(0);
+            } catch (parseErr) {
+                console.error("Parse logic error", parseErr);
+                setError("Erro ao processar as semanas.");
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
